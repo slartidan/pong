@@ -1,10 +1,12 @@
 package pong.playground;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import pong.model.AxisPosition;
-import pong.model.Ball;
+import pong.model.Item;
+import pong.model.ItemDirection;
+import pong.model.Player;
 import pong.model.SpacePosition;
 import pong.model.SpaceTimePosition;
 import pong.model.TimePosition;
@@ -16,7 +18,8 @@ public class PlaygroundPresenter {
 	
 	private PlaygroundView view;
 	private BallView ballView;
-	private final Collection<PlayerView> playerViews = new ArrayList<PlayerView>();
+	private final List<PlayerView> playerViews = new ArrayList<>();
+	private final List<Player> players = new ArrayList<>();
 
 	public void setView(PlaygroundView view) {
 		this.view = view;
@@ -36,26 +39,53 @@ public class PlaygroundPresenter {
 			
 			@Override
 			public void onUserWantsToMoveUp() {
-				System.out.println("up");
+				Player player = getCurrentPlayer();
+				if (!player.directionChange(ItemDirection.UPWARDS))
+					return;
+				
+				player.positions.clear();
+				player.positions.add(leftBottomAtStart());
+				player.positions.add(topAt1000());
+
+				getCurrentPlayerView().refresh(player);
 			}
 		});
 		view.addOnUserWantsToStopListener(new OnUserWantsToStopListener() {
 			
 			@Override
 			public void onUserWantsToStop() {
-				System.out.println("stop");
+				Player player = getCurrentPlayer();
+				if (!player.directionChange(ItemDirection.STOP))
+					return;
+				
+				Item item = new Item();
+				item.positions.add(leftBottomAtStart());
+
+				getCurrentPlayerView().refresh(item);
 			}
 		});
 	}
-
-	private void ballMovement() {
-		Ball ball = new Ball();
-		ball.positions.add(leftBottomAtStart());
-		ball.positions.add(rightTopAt5000());
-		
-		ballView.refresh(ball);
+	
+	protected Player getCurrentPlayer() {
+		return players.get(0);
 	}
 
+	private PlayerView getCurrentPlayerView() {
+		return playerViews.get(0);
+	}
+
+	private void ballMovement() {
+		Item item = new Item();
+		item.positions.add(leftBottomAtStart());
+		item.positions.add(rightTopAt5000());
+		
+		ballView.refresh(item);
+	}
+
+	private SpaceTimePosition topAt1000() {
+		return spaceTimePosition(0d, -1d, 1000l);
+	}
+	
 	private SpaceTimePosition rightTopAt5000() {
 		return spaceTimePosition(3d, -1d, 5000l);
 	}
@@ -94,6 +124,7 @@ public class PlaygroundPresenter {
 	}
 
 	private void getPlayer(int playerNumber) {
+		players.add(new Player());
 		playerViews.add(view.lookupPlayer(playerNumber));
 	}
 

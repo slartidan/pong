@@ -10,12 +10,11 @@ import pong.model.Player;
 import pong.model.SpacePosition;
 import pong.model.SpaceTimePosition;
 import pong.model.TimePosition;
-import pong.playground.PlaygroundView.OnUserWantsToMoveUpListener;
-import pong.playground.PlaygroundView.OnUserWantsToStopListener;
+import pong.playground.PlaygroundView.OnUserWantsToMoveListener;
 
 
 public class PlaygroundPresenter {
-	
+
 	private PlaygroundView view;
 	private BallView ballView;
 	private final List<PlayerView> playerViews = new ArrayList<>();
@@ -26,51 +25,46 @@ public class PlaygroundPresenter {
 		view.loadLayoutFile();
 		view.createScene();
 		lookupElements(view);
-		
+
 		launchAsynchronously(view);
-		
+
 		addMovementListeners(view);
-		
+
 		ballMovement();
 	}
 
 	private void addMovementListeners(PlaygroundView view) {
-		view.addOnUserWantsToMoveUpListener(new OnUserWantsToMoveUpListener() {
-			
-			@Override
-			public void onUserWantsToMoveUp() {
-				Player player = getCurrentPlayer();
-				if (!player.directionChange(ItemDirection.UPWARDS))
-					return;
-				
-				PlayerView playerView = getCurrentPlayerView();
-				
-				player.positions.clear();
-				SpaceTimePosition start = new SpaceTimePosition();
-				start.space = playerView.getCurrentSpacePosition();
-				start.time = new TimePosition();
-				player.positions.add(start);
-				player.positions.add(topAt1000());
+		view.addOnUserWantsToMoveListener(new OnUserWantsToMoveListener() {
 
-				playerView.refresh(player);
-			}
-		});
-		view.addOnUserWantsToStopListener(new OnUserWantsToStopListener() {
-			
 			@Override
-			public void onUserWantsToStop() {
-				Player player = getCurrentPlayer();
-				if (!player.directionChange(ItemDirection.STOP))
-					return;
-				
-				Item item = new Item();
-				item.positions.add(leftBottomAtStart());
-
-				getCurrentPlayerView().refresh(item);
+			public void onUserWantsToMove(ItemDirection direction) {
+				PlaygroundPresenter.this.onUserWantsToMove(direction);
 			}
 		});
 	}
-	
+
+	protected void onUserWantsToMove(ItemDirection direction) {
+		Player player = getCurrentPlayer();
+		if (!player.directionChange(direction))
+			return;
+
+		PlayerView playerView = getCurrentPlayerView();
+
+		player.positions.clear();
+		SpaceTimePosition start = new SpaceTimePosition();
+		start.space = playerView.getCurrentSpacePosition();
+		start.time = new TimePosition();
+		player.positions.add(start);
+
+		if (direction == ItemDirection.UPWARDS)
+			player.positions.add(topAt1000());
+		if (direction == ItemDirection.DOWNWARDS)
+			player.positions.add(bottomAt1000());
+
+		playerView.refresh(player);
+
+	}
+
 	protected Player getCurrentPlayer() {
 		return players.get(0);
 	}
@@ -83,23 +77,27 @@ public class PlaygroundPresenter {
 		Item item = new Item();
 		item.positions.add(leftBottomAtStart());
 		item.positions.add(rightTopAt5000());
-		
+
 		ballView.refresh(item);
 	}
 
-	private SpaceTimePosition topAt1000() {
+	private static SpaceTimePosition topAt1000() {
 		return spaceTimePosition(0d, -1d, 1000l);
 	}
-	
-	private SpaceTimePosition rightTopAt5000() {
+
+	private static SpaceTimePosition bottomAt1000() {
+		return spaceTimePosition(0d, 1d, 1000l);
+	}
+
+	private static SpaceTimePosition rightTopAt5000() {
 		return spaceTimePosition(3d, -1d, 5000l);
 	}
 
-	private SpaceTimePosition leftBottomAtStart() {
+	private static SpaceTimePosition leftBottomAtStart() {
 		return spaceTimePosition(0d, 0d, 0l);
 	}
 
-	private SpaceTimePosition spaceTimePosition(double x, double y, long t) {
+	private static SpaceTimePosition spaceTimePosition(double x, double y, long t) {
 		SpaceTimePosition spaceTimePosition = new SpaceTimePosition();
 		spaceTimePosition.space = new SpacePosition();
 		spaceTimePosition.space.x = new AxisPosition();
@@ -124,7 +122,7 @@ public class PlaygroundPresenter {
 			public void run() {
 				view.launch();
 			}
-			
+
 		}).start();
 	}
 

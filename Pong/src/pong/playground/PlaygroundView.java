@@ -1,6 +1,8 @@
 package pong.playground;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -11,20 +13,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import pong.model.ItemDirection;
 
 public class PlaygroundView {
 
-	public interface OnUserWantsToStopListener {
+	public interface OnUserWantsToMoveListener {
 
-		void onUserWantsToStop();
-
-	}
-
-	private static final KeyCode MOVE_UP_KEY = KeyCode.O;
-
-	public interface OnUserWantsToMoveUpListener {
-
-		void onUserWantsToMoveUp();
+		void onUserWantsToMove(ItemDirection direction);
 
 	}
 
@@ -46,6 +41,11 @@ public class PlaygroundView {
 
 	private Pane rootLayout;
 	private Scene scene;
+	private static final Map<KeyCode, ItemDirection> buttonDirections = new HashMap<>();
+	static {
+		buttonDirections.put(KeyCode.O, ItemDirection.UPWARDS);
+		buttonDirections.put(KeyCode.L, ItemDirection.DOWNWARDS);
+	}
 
 	public BallView lookupBall() {
 		return new BallView(lookup("#ball"));
@@ -78,24 +78,21 @@ public class PlaygroundView {
 		}
 	}
 
-	public void addOnUserWantsToMoveUpListener(OnUserWantsToMoveUpListener listener) {
+	public void addOnUserWantsToMoveListener(OnUserWantsToMoveListener listener) {
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
 			@Override
 			public void handle(KeyEvent event) {
-				if (MOVE_UP_KEY.equals(event.getCode()))
-					listener.onUserWantsToMoveUp();
+				ItemDirection direction = buttonDirections .get(event.getCode());
+				listener.onUserWantsToMove(direction);
 			}
 		});
-	}
-
-	public void addOnUserWantsToStopListener(OnUserWantsToStopListener listener) {
 		scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
 
 			@Override
 			public void handle(KeyEvent event) {
-				if (MOVE_UP_KEY.equals(event.getCode()))
-					listener.onUserWantsToStop();
+				ItemDirection direction = buttonDirections .get(event.getCode());
+				listener.onUserWantsToMove(direction == null ? null : ItemDirection.STOP);
 			}
 		});
 	}

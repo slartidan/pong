@@ -43,11 +43,16 @@ public class PlaygroundPresenter {
 				if (!player.directionChange(ItemDirection.UPWARDS))
 					return;
 				
+				PlayerView playerView = getCurrentPlayerView();
+				
 				player.positions.clear();
-				player.positions.add(leftBottomAtStart());
+				SpaceTimePosition start = new SpaceTimePosition();
+				start.space = playerView.getCurrentSpacePosition();
+				start.time = new TimePosition();
+				player.positions.add(start);
 				player.positions.add(topAt1000());
 
-				getCurrentPlayerView().refresh(player);
+				playerView.refresh(player);
 			}
 		});
 		view.addOnUserWantsToStopListener(new OnUserWantsToStopListener() {

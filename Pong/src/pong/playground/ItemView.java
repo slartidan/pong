@@ -7,6 +7,7 @@ import javafx.beans.value.WritableValue;
 import javafx.util.Duration;
 import pong.model.AxisPosition;
 import pong.model.Item;
+import pong.model.SpacePosition;
 import pong.model.SpaceTimePosition;
 import pong.model.TimePosition;
 
@@ -23,7 +24,14 @@ public abstract class ItemView {
 		}
 		timeline.play();
 	}
-
+	
+	public SpacePosition getCurrentSpacePosition() {
+		SpacePosition spacePosition = new SpacePosition();
+		spacePosition.x = getAxisPositionFromPixels(getXProperty().getValue());
+		spacePosition.y = getAxisPositionFromPixels(getYProperty().getValue());
+		return spacePosition;
+	}
+	
 	private KeyFrame spaceTimePositionToKeyFrame(SpaceTimePosition spaceTimePosition) {
 		final KeyValue x = new KeyValue(getXProperty(), getPixelsFromAxisPosition(spaceTimePosition.space.x));
 		final KeyValue y = new KeyValue(getYProperty(), getPixelsFromAxisPosition(spaceTimePosition.space.y));
@@ -36,6 +44,12 @@ public abstract class ItemView {
 
 	private Duration getDurationFromTimePosition(TimePosition timePosition) {
 		return Duration.millis(timePosition.time);
+	}
+
+	private AxisPosition getAxisPositionFromPixels(Number pixels) {
+		AxisPosition axisPosition = new AxisPosition();
+		axisPosition.position = pixels.doubleValue() / 100d;
+		return axisPosition;
 	}
 
 	private double getPixelsFromAxisPosition(AxisPosition axisPosition) {

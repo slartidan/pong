@@ -6,6 +6,6 @@ import java.util.List;
 
 public class Item {
 	
-	public final List<SpaceTimePosition> positions = new ArrayList<>();
+	public final List<SpaceTimeVector> positions = new ArrayList<>();
 
 }

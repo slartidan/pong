@@ -1,15 +1,19 @@
 package pong.playground;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.value.WritableValue;
 import javafx.util.Duration;
-import pong.model.AxisPosition;
+import pong.model.Axis;
+import pong.model.Axis.SpaceAxis;
+import pong.model.AxisVector;
 import pong.model.Item;
-import pong.model.SpacePosition;
-import pong.model.SpaceTimePosition;
-import pong.model.TimePosition;
+import pong.model.SpaceTimeVector;
+import pong.model.SpaceVector;
 
 public abstract class ItemView {
 	
@@ -18,42 +22,40 @@ public abstract class ItemView {
 	public void refresh(Item ball) {
 		timeline.stop();
 		timeline.getKeyFrames().clear();
-		for (SpaceTimePosition spaceTimePosition : ball.positions) {
+		for (SpaceTimeVector spaceTimePosition : ball.positions) {
 			final KeyFrame keyFrame = spaceTimePositionToKeyFrame(spaceTimePosition);
 			timeline.getKeyFrames().add(keyFrame);
 		}
 		timeline.play();
 	}
 	
-	public SpacePosition getCurrentSpacePosition() {
-		SpacePosition spacePosition = new SpacePosition();
-		spacePosition.x = getAxisPositionFromPixels(getXProperty().getValue());
-		spacePosition.y = getAxisPositionFromPixels(getYProperty().getValue());
+	public SpaceVector getCurrentSpacePosition() {
+		SpaceVector spacePosition = new SpaceVector();
+		for (SpaceAxis axis : spacePosition.getAxises())
+			spacePosition.set(axis, getAxisPositionFromPixels(getProperty(axis).getValue()));
 		return spacePosition;
 	}
 	
-	private KeyFrame spaceTimePositionToKeyFrame(SpaceTimePosition spaceTimePosition) {
-		final KeyValue x = new KeyValue(getXProperty(), getPixelsFromAxisPosition(spaceTimePosition.space.x));
-		final KeyValue y = new KeyValue(getYProperty(), getPixelsFromAxisPosition(spaceTimePosition.space.y));
-		final KeyFrame kf = new KeyFrame(getDurationFromTimePosition(spaceTimePosition.time), x, y);
-		return kf;
+	private KeyFrame spaceTimePositionToKeyFrame(SpaceTimeVector spaceTimePosition) {
+		List<KeyValue> values = new ArrayList<>();
+		for (SpaceAxis axis : SpaceAxis.getAll())
+			values.add(new KeyValue(getProperty(axis), getPixelsFromAxisPosition(spaceTimePosition.get(axis))));
+		Duration duration = getDurationFromTimePosition(spaceTimePosition.get(Axis.T));
+		return new KeyFrame(duration, values.toArray(new KeyValue[0]));
 	}
 
-	protected abstract WritableValue<Number> getXProperty();
-	protected abstract WritableValue<Number> getYProperty();
+	protected abstract WritableValue<Number> getProperty(Axis axis);
 
-	private Duration getDurationFromTimePosition(TimePosition timePosition) {
-		return Duration.millis(timePosition.time);
+	private Duration getDurationFromTimePosition(AxisVector timePosition) {
+		return Duration.millis(timePosition.getLength());
 	}
 
-	private AxisPosition getAxisPositionFromPixels(Number pixels) {
-		AxisPosition axisPosition = new AxisPosition();
-		axisPosition.position = pixels.doubleValue() / 100d;
-		return axisPosition;
+	private AxisVector getAxisPositionFromPixels(Number pixels) {
+		return AxisVector.ofLength(pixels.doubleValue() / 100d);
 	}
 
-	private double getPixelsFromAxisPosition(AxisPosition axisPosition) {
-		return (double) (axisPosition.position * 100d);
+	private double getPixelsFromAxisPosition(AxisVector axisPosition) {
+		return (double) (axisPosition.getLength() * 100d);
 	}
 
 }

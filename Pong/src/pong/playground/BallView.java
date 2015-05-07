@@ -2,6 +2,7 @@ package pong.playground;
 
 import javafx.beans.value.WritableValue;
 import javafx.scene.shape.Circle;
+import pong.model.Axis;
 
 public class BallView extends ItemView {
 
@@ -12,13 +13,11 @@ public class BallView extends ItemView {
 	}
 
 	@Override
-	protected WritableValue<Number> getXProperty() {
-		return circle.centerXProperty();
+	protected WritableValue<Number> getProperty(Axis axis) {
+		if (axis == Axis.X)
+			return circle.centerXProperty();
+		if (axis == Axis.Y)
+			return circle.centerYProperty();
+		return null;
 	}
-
-	@Override
-	protected WritableValue<Number> getYProperty() {
-		return circle.centerYProperty();
-	}
-
 }

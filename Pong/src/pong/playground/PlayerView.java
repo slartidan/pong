@@ -2,6 +2,7 @@ package pong.playground;
 
 import javafx.beans.value.WritableValue;
 import javafx.scene.shape.Ellipse;
+import pong.model.Axis;
 
 public class PlayerView extends ItemView {
 
@@ -12,13 +13,11 @@ public class PlayerView extends ItemView {
 	}
 
 	@Override
-	protected WritableValue<Number> getXProperty() {
-		return ellipse.centerXProperty();
+	protected WritableValue<Number> getProperty(Axis axis) {
+		if (axis == Axis.X)
+			return ellipse.centerXProperty();
+		if (axis == Axis.Y)
+			return ellipse.centerYProperty();
+		return null;
 	}
-
-	@Override
-	protected WritableValue<Number> getYProperty() {
-		return ellipse.centerYProperty();
-	}
-
 }

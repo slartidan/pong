@@ -8,6 +8,8 @@ import pong.model.Ball;
 import pong.model.SpacePosition;
 import pong.model.SpaceTimePosition;
 import pong.model.TimePosition;
+import pong.playground.PlaygroundView.OnUserWantsToMoveUpListener;
+import pong.playground.PlaygroundView.OnUserWantsToStopListener;
 
 
 public class PlaygroundPresenter {
@@ -24,6 +26,29 @@ public class PlaygroundPresenter {
 		
 		launchAsynchronously(view);
 		
+		addMovementListeners(view);
+		
+		ballMovement();
+	}
+
+	private void addMovementListeners(PlaygroundView view) {
+		view.addOnUserWantsToMoveUpListener(new OnUserWantsToMoveUpListener() {
+			
+			@Override
+			public void onUserWantsToMoveUp() {
+				System.out.println("up");
+			}
+		});
+		view.addOnUserWantsToStopListener(new OnUserWantsToStopListener() {
+			
+			@Override
+			public void onUserWantsToStop() {
+				System.out.println("stop");
+			}
+		});
+	}
+
+	private void ballMovement() {
 		Ball ball = new Ball();
 		ball.positions.add(leftBottomAtStart());
 		ball.positions.add(rightTopAt5000());

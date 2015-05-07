@@ -26,16 +26,13 @@ public class PlaygroundPresenter {
 		this.view = view;
 		view.loadLayoutFile();
 		view.createScene();
-		lookupElements(view);
-
-		launchAsynchronously(view);
-
-		addMovementListeners(view);
-
+		lookupElements();
+		launchAsynchronously();
+		addMovementListeners();
 		ballMovement();
 	}
 
-	private void addMovementListeners(PlaygroundView view) {
+	private void addMovementListeners() {
 		view.addOnUserWantsToMoveListener(new OnUserWantsToMoveListener() {
 
 			@Override
@@ -86,18 +83,10 @@ public class PlaygroundPresenter {
 
 	private void ballMovement() {
 		Item item = new Item();
-		item.positions.add(leftBottomAtStart());
-		item.positions.add(rightTopAt5000());
+		item.positions.add(spaceTimePosition(0d, 0d, 0l));
+		item.positions.add(spaceTimePosition(3d, -1d, 5000l));
 
 		ballView.refresh(item);
-	}
-
-	private static SpaceTimeVector rightTopAt5000() {
-		return spaceTimePosition(3d, -1d, 5000l);
-	}
-
-	private static SpaceTimeVector leftBottomAtStart() {
-		return spaceTimePosition(0d, 0d, 0l);
 	}
 
 	private static SpaceTimeVector spaceTimePosition(double x, double y, long t) {
@@ -108,13 +97,13 @@ public class PlaygroundPresenter {
 		return spaceTimePosition;
 	}
 
-	private void lookupElements(PlaygroundView view) {
+	private void lookupElements() {
 		ballView = view.lookupBall();
-		getPlayer(PlayerIdentifier.LEFT);
-		getPlayer(PlayerIdentifier.RIGHT);
+		setupPlayer(PlayerIdentifier.LEFT);
+		setupPlayer(PlayerIdentifier.RIGHT);
 	}
 
-	private void launchAsynchronously(PlaygroundView view) {
+	private void launchAsynchronously() {
 		new Thread(new Runnable() {
 
 			@Override
@@ -125,7 +114,7 @@ public class PlaygroundPresenter {
 		}).start();
 	}
 
-	private void getPlayer(PlayerIdentifier playerIdentifier) {
+	private void setupPlayer(PlayerIdentifier playerIdentifier) {
 		players.put(playerIdentifier, new Player());
 		playerViews.put(playerIdentifier, view.lookupPlayer(playerIdentifier));
 	}

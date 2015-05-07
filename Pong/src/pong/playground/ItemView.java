@@ -7,6 +7,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.value.WritableValue;
+import javafx.collections.ObservableList;
 import javafx.util.Duration;
 import pong.model.Axis;
 import pong.model.Axis.SpaceAxis;
@@ -17,16 +18,19 @@ import pong.model.SpaceVector;
 
 public abstract class ItemView {
 	
+	private static final double PIXELS_PER_SPACE_AXIS_LENGTH = 100d;
 	private final Timeline timeline = new Timeline();
 	
 	public void refresh(Item ball) {
 		timeline.stop();
-		timeline.getKeyFrames().clear();
-		for (SpaceTimeVector spaceTimePosition : ball.positions) {
-			final KeyFrame keyFrame = spaceTimePositionToKeyFrame(spaceTimePosition);
-			timeline.getKeyFrames().add(keyFrame);
-		}
+		updateKeyFrames(ball, timeline.getKeyFrames());
 		timeline.play();
+	}
+
+	private void updateKeyFrames(Item ball, ObservableList<KeyFrame> keyFrames) {
+		keyFrames.clear();
+		for (SpaceTimeVector spaceTimePosition : ball.positions)
+			keyFrames.add(toKeyFrame(spaceTimePosition));
 	}
 	
 	public SpaceVector getCurrentSpacePosition() {
@@ -36,12 +40,13 @@ public abstract class ItemView {
 		return spacePosition;
 	}
 	
-	private KeyFrame spaceTimePositionToKeyFrame(SpaceTimeVector spaceTimePosition) {
-		List<KeyValue> values = new ArrayList<>();
+	private KeyFrame toKeyFrame(SpaceTimeVector spaceTimePosition) {
+		List<KeyValue> targetPositions = new ArrayList<>();
 		for (SpaceAxis axis : SpaceAxis.getAll())
-			values.add(new KeyValue(getProperty(axis), getPixelsFromAxisPosition(spaceTimePosition.get(axis))));
-		Duration duration = getDurationFromTimePosition(spaceTimePosition.get(Axis.T));
-		return new KeyFrame(duration, values.toArray(new KeyValue[0]));
+			targetPositions.add(new KeyValue(getProperty(axis), getPixelsFromAxisPosition(spaceTimePosition.get(axis))));
+		
+		Duration tagetTime = getDurationFromTimePosition(spaceTimePosition.get(Axis.T));
+		return new KeyFrame(tagetTime, targetPositions.toArray(new KeyValue[0]));
 	}
 
 	protected abstract WritableValue<Number> getProperty(Axis axis);
@@ -51,11 +56,11 @@ public abstract class ItemView {
 	}
 
 	private AxisVector getAxisPositionFromPixels(Number pixels) {
-		return AxisVector.ofLength(pixels.doubleValue() / 100d);
+		return AxisVector.ofLength(pixels.doubleValue() / PIXELS_PER_SPACE_AXIS_LENGTH);
 	}
 
 	private double getPixelsFromAxisPosition(AxisVector axisPosition) {
-		return (double) (axisPosition.getLength() * 100d);
+		return (double) (axisPosition.getLength() * PIXELS_PER_SPACE_AXIS_LENGTH);
 	}
 
 }

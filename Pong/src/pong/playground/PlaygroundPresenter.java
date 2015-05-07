@@ -1,13 +1,14 @@
 package pong.playground;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import pong.model.Axis;
 import pong.model.AxisVector;
 import pong.model.Item;
 import pong.model.ItemDirection;
 import pong.model.Player;
+import pong.model.PlayerIdentifier;
 import pong.model.SpaceTimeVector;
 import pong.model.SpaceVector;
 import pong.playground.PlaygroundView.OnUserWantsToMoveListener;
@@ -18,8 +19,8 @@ public class PlaygroundPresenter {
 	private static final double PLAYER_VELOCITY = 0.001d;
 	private PlaygroundView view;
 	private BallView ballView;
-	private final List<PlayerView> playerViews = new ArrayList<>();
-	private final List<Player> players = new ArrayList<>();
+	private final Map<PlayerIdentifier, PlayerView> playerViews = new HashMap<>();
+	private final Map<PlayerIdentifier, Player> players = new HashMap<>();
 
 	public void setView(PlaygroundView view) {
 		this.view = view;
@@ -38,18 +39,18 @@ public class PlaygroundPresenter {
 		view.addOnUserWantsToMoveListener(new OnUserWantsToMoveListener() {
 
 			@Override
-			public void onUserWantsToMove(ItemDirection direction) {
-				PlaygroundPresenter.this.onUserWantsToMove(direction);
+			public void onUserWantsToMove(PlayerIdentifier player, ItemDirection direction) {
+				PlaygroundPresenter.this.onUserWantsToMove(player, direction);
 			}
 		});
 	}
 
-	protected void onUserWantsToMove(ItemDirection direction) {
-		Player player = getCurrentPlayer();
+	protected void onUserWantsToMove(PlayerIdentifier playerIdentifier, ItemDirection direction) {
+		Player player = players.get(playerIdentifier);
 		if (!player.directionChange(direction))
 			return;
 
-		PlayerView playerView = getCurrentPlayerView();
+		PlayerView playerView = playerViews.get(playerIdentifier);
 
 		player.positions.clear();
 		
@@ -83,14 +84,6 @@ public class PlaygroundPresenter {
 		return target.atTime(duration);
 	}
 
-	protected Player getCurrentPlayer() {
-		return players.get(0);
-	}
-
-	private PlayerView getCurrentPlayerView() {
-		return playerViews.get(0);
-	}
-
 	private void ballMovement() {
 		Item item = new Item();
 		item.positions.add(leftBottomAtStart());
@@ -117,8 +110,8 @@ public class PlaygroundPresenter {
 
 	private void lookupElements(PlaygroundView view) {
 		ballView = view.lookupBall();
-		getPlayer(1);
-		getPlayer(2);
+		getPlayer(PlayerIdentifier.LEFT);
+		getPlayer(PlayerIdentifier.RIGHT);
 	}
 
 	private void launchAsynchronously(PlaygroundView view) {
@@ -132,9 +125,9 @@ public class PlaygroundPresenter {
 		}).start();
 	}
 
-	private void getPlayer(int playerNumber) {
-		players.add(new Player());
-		playerViews.add(view.lookupPlayer(playerNumber));
+	private void getPlayer(PlayerIdentifier playerIdentifier) {
+		players.put(playerIdentifier, new Player());
+		playerViews.put(playerIdentifier, view.lookupPlayer(playerIdentifier));
 	}
 
 }

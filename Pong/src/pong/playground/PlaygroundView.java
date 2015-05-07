@@ -14,12 +14,13 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import pong.model.ItemDirection;
+import pong.model.PlayerIdentifier;
 
 public class PlaygroundView {
 
 	public interface OnUserWantsToMoveListener {
 
-		void onUserWantsToMove(ItemDirection direction);
+		void onUserWantsToMove(PlayerIdentifier player, ItemDirection direction);
 
 	}
 
@@ -43,16 +44,25 @@ public class PlaygroundView {
 	private Scene scene;
 	private static final Map<KeyCode, ItemDirection> buttonDirections = new HashMap<>();
 	static {
+		buttonDirections.put(KeyCode.Q, ItemDirection.UPWARDS);
+		buttonDirections.put(KeyCode.A, ItemDirection.DOWNWARDS);
 		buttonDirections.put(KeyCode.O, ItemDirection.UPWARDS);
 		buttonDirections.put(KeyCode.L, ItemDirection.DOWNWARDS);
+	}
+	protected static Map<KeyCode, PlayerIdentifier> buttonPlayerIdentifiers = new HashMap<>();
+	static {
+		buttonPlayerIdentifiers.put(KeyCode.Q, PlayerIdentifier.LEFT);
+		buttonPlayerIdentifiers.put(KeyCode.A, PlayerIdentifier.LEFT);
+		buttonPlayerIdentifiers.put(KeyCode.O, PlayerIdentifier.RIGHT);
+		buttonPlayerIdentifiers.put(KeyCode.L, PlayerIdentifier.RIGHT);
 	}
 
 	public BallView lookupBall() {
 		return new BallView(lookup("#ball"));
 	}
 
-	public PlayerView lookupPlayer(int i) {
-		return new PlayerView(lookup("#player"+i));
+	public PlayerView lookupPlayer(PlayerIdentifier playerIdentifier) {
+		return new PlayerView(lookup("#player"+playerIdentifier));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -83,16 +93,18 @@ public class PlaygroundView {
 
 			@Override
 			public void handle(KeyEvent event) {
-				ItemDirection direction = buttonDirections .get(event.getCode());
-				listener.onUserWantsToMove(direction);
+				ItemDirection direction = buttonDirections.get(event.getCode());
+				PlayerIdentifier player = buttonPlayerIdentifiers.get(event.getCode());
+				listener.onUserWantsToMove(player, direction);
 			}
 		});
 		scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
 
 			@Override
 			public void handle(KeyEvent event) {
-				ItemDirection direction = buttonDirections .get(event.getCode());
-				listener.onUserWantsToMove(direction == null ? null : ItemDirection.STOP);
+				ItemDirection direction = buttonDirections.get(event.getCode());
+				PlayerIdentifier player = buttonPlayerIdentifiers.get(event.getCode());
+				listener.onUserWantsToMove(player, direction == null ? null : ItemDirection.STOP);
 			}
 		});
 	}

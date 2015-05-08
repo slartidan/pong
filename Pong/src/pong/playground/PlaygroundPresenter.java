@@ -43,6 +43,9 @@ public class PlaygroundPresenter {
 	}
 
 	protected void onUserWantsToMove(PlayerIdentifier playerIdentifier, ItemDirection direction) {
+		if (playerIdentifier == null)
+			return;
+		
 		Player player = players.get(playerIdentifier);
 		if (!player.directionChange(direction))
 			return;
